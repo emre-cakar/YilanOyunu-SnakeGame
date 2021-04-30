@@ -1,0 +1,200 @@
+#include <stdio.h> 
+#include <windows.h>
+short satir, kolon, karakter=219, k,l, ksay=0, kuyruk[2][100];
+unsigned char tus;
+enum boolean{ F, T }durum=T;
+
+void TamEkran(){
+	HWND hWnd = GetConsoleWindow();
+	ShowWindow(hWnd,SW_SHOWMAXIMIZED);  // Console tam ekran yapılıyor
+}
+
+void Yemek(){
+	k= 15 + rand()%(satir-25);
+	l= 15 + rand()%(kolon-30);
+}
+
+void ImlecGizle(){
+   HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+   CONSOLE_CURSOR_INFO info;
+   info.dwSize = 100;
+   info.bVisible = FALSE;
+   SetConsoleCursorInfo(consoleHandle, &info);
+}
+
+void git(int s,int k){
+	HANDLE hConsoleOutput;
+	COORD ImlecYeri={k-1,s-1};
+	hConsoleOutput=GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleCursorPosition(hConsoleOutput, ImlecYeri);
+}
+
+void EkranTaslak(){
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi); 
+	satir = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;  // Concole ekran yüksekliği alınıyor  63
+	kolon = csbi.srWindow.Right - csbi.srWindow.Left + 1; // Console ekran genişliği alınıyor 237
+	short i,j;
+	for(i=0;i<satir-1;i++){
+		for(j=0;j<kolon;j++){
+			if( i==0 || i==satir-2 ){
+				git(i+1,j+1);printf("%c",karakter);
+			}
+			if( j<2 || j>kolon-3 ){
+				git(i+1,j+1);printf("%c",karakter);
+			}
+		}
+	}
+}
+
+void YaziYaz(short x, short y, char *adres, short byt){
+	int i;
+	git(x,y);
+	for(i=0;i<byt;i++){printf("%c",*(adres+i));}
+}
+
+void Yazilar(){
+//	setlocale(LC_ALL, "Turkish"); srand(time(0));
+  	char bilgi[]="© 2021 Emre CAKAR";
+  	char baslik[]="Y I L A N   O Y U N U";
+  	char menu1[]="B A S L A";
+  	char menu2[]="A Y A R L A R";
+  	char menu3[]="C I K I S";
+
+  	YaziYaz(satir-3,(kolon-4-strlen(bilgi))/2,bilgi,strlen(bilgi));
+  	YaziYaz(12,(kolon-4-strlen(baslik))/2,baslik,strlen(baslik));
+  	YaziYaz(19,(kolon-4-strlen(menu1))/2,menu1,strlen(menu1));
+  	YaziYaz(22,(kolon-4-strlen(menu2))/2,menu2,strlen(menu2));
+  	YaziYaz(25,(kolon-4-strlen(menu3))/2,menu3,strlen(menu3));
+}
+
+void Isaretle(short sec){
+	int i, konum[]={19,22,25};
+	for(i=0;i<sizeof(konum)/sizeof(int);i++){
+		if((i+1)==sec){
+			git(konum[i],(kolon-4-strlen("B A Ş L A"))/2-7);
+			printf("%c%c%c",16,16,16);
+			git(konum[i],(kolon-4-strlen("B A Ş L A"))/2+13);
+			printf("%c%c%c",17,17,17);
+		}else{
+			git(konum[i],(kolon-4-strlen("B A Ş L A"))/2-7);
+			printf("   ");
+			git(konum[i],(kolon-4-strlen("B A Ş L A"))/2+13);
+			printf("   ");
+		}
+	}
+}
+
+void Menu(){
+	system("cls");
+	ImlecGizle();
+	EkranTaslak();
+	Yazilar();
+	durum=T;
+	int secim=1;
+
+	while(durum){
+		if(kbhit()){
+			tus=getch();
+			if(tus==224){
+				tus=getch();
+				switch(tus){
+					case 72:   //yukarı yön tuşu
+						secim--;
+						break;
+					case 80:  // aşağı yön tuşu
+						secim++;
+						break;
+				}
+				secim=(secim==4)?1:secim;
+				secim=(secim==0)?3:secim;	
+			}else if(tus==13){
+				if (secim==1){
+					durum=F;
+				}else if(secim==3){
+					exit(0);
+				}
+			}
+		}
+		Isaretle(secim);
+		Sleep(60);	
+	}
+}
+
+void OyunBilgi(){
+	int i;
+	for(i=1;i<kolon;i++){git(5,i);printf("%c",219);}
+	git(3,5); printf("© 2021 Emre CAKAR");
+	git(3,kolon/2-10); printf("Y I L A N   O Y U N U");
+	git(3,kolon-20); printf("PUAN : %d",ksay);
+	for(i=1;i<kolon;i++){git(58,i);printf("%c",219);}
+	git(60,5); printf("Bilgisayar Programlama 1 dersi kapsaminda hazirlanmistir.");
+	git(60,kolon-50); printf("MARMARA UNIVERSITESI | BILGISAYAR MUHENDISLIGI");
+}
+
+void Oyun(){
+	ImlecGizle();
+	int yx=satir/2, yy=kolon/2, px=0, py=0, i,asd;
+	system("cls");
+	EkranTaslak();
+	OyunBilgi();
+
+
+	durum=T; Yemek();
+	while(durum){
+		if(kbhit()){
+			tus=getch();
+			if(tus==224){
+				tus=getch();
+				switch(tus){
+					case 72:   px=0; py=(py==1)?1:-1;  //yukarı
+						break;
+					case 80:  px=0; py=(py==-1)?-1:1;  //asagi
+						break;
+					case 77:  px=(px==-1)?-1:1; py=0;   //sag
+						break;
+					case 75:  px=(px==1)?1:-1; py=0;  //sol
+						break;
+				}	
+			
+			}
+		}
+
+		kuyruk[0][0]=yy;kuyruk[1][0]=yx;
+		
+		for(i=1;i<=ksay;i++){
+			if(yx==kuyruk[1][i] && yy==kuyruk[0][i]){
+				git(satir/2,kolon/2-8);printf("Y A N D I N I Z");
+				git(satir/2+1,kolon/2-16);printf("Devam etmek icin bir tusa basiniz");
+				durum=F;
+				getch();
+				Menu();
+			}
+		}
+		
+		yx=yx+py; yy=yy+px;
+		yx=(yx>satir-6)?6:yx; yx=(yx<6)?satir-6:yx;
+		yy=(yy>kolon-3)?3:yy; yy=(yy<3)?kolon-3:yy;
+
+		if(yx==k && yy==l){Yemek();ksay++;}
+		git(k,l);printf("%c",254);
+		
+		git(yx,yy);printf("*");
+		for(i=0;i<ksay;i++){git(kuyruk[1][i],kuyruk[0][i]);printf("*");}
+		Sleep(60);	
+		git(yx,yy);printf(" ");
+		for(i=0;i<ksay;i++){git(kuyruk[1][i],kuyruk[0][i]);printf(" ");}
+		
+		for(i=ksay;i>0;i--){kuyruk[0][i]=kuyruk[0][i-1];kuyruk[1][i]=kuyruk[1][i-1];}
+		git(3,kolon-20); printf("PUAN : %d",ksay);
+	}
+
+}
+
+void main(){
+	srand(time(NULL)); 
+	TamEkran();
+	Menu();
+	Oyun();
+}
+
